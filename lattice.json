@@ -1,0 +1,31 @@
+{
+  "materials": [{"id": 1, "E": 210e9, "nu": 0.3, "model": "linear_elastic"}],
+  "sections": [{"id": 1, "A": 0.01, "Iy": 1e-5, "Iz": 1e-5, "J": 2e-5}],
+  "nodes": [
+    {"id": 1, "coords": [0.0, 0.0, 0.0]},
+    {"id": 2, "coords": [1.0, 0.0, 0.0]},
+    {"id": 3, "coords": [1.0, 1.0, 0.0]},
+    {"id": 4, "coords": [0.0, 1.0, 0.0]},
+    {"id": 5, "coords": [0.5, 0.5, 1.0]}
+  ],
+  "elements": [
+    {"id": 1, "nodes": [1, 2], "material": 1, "section": 1},
+    {"id": 2, "nodes": [2, 3], "material": 1, "section": 1},
+    {"id": 3, "nodes": [3, 4], "material": 1, "section": 1},
+    {"id": 4, "nodes": [4, 1], "material": 1, "section": 1},
+    {"id": 5, "nodes": [1, 5], "material": 1, "section": 1},
+    {"id": 6, "nodes": [2, 5], "material": 1, "section": 1},
+    {"id": 7, "nodes": [3, 5], "material": 1, "section": 1},
+    {"id": 8, "nodes": [4, 5], "material": 1, "section": 1}
+  ],
+  "boundary_conditions": [
+    {"node": 1, "dof": ["ux", "uy", "uz", "rx", "ry", "rz"], "value": 0.0},
+    {"node": 2, "dof": ["ux", "uy", "uz", "rx", "ry", "rz"], "value": 0.0},
+    {"node": 3, "dof": ["ux", "uy", "uz", "rx", "ry", "rz"], "value": 0.0},
+    {"node": 4, "dof": ["ux", "uy", "uz", "rx", "ry", "rz"], "value": 0.0}
+  ],
+  "point_loads": [
+    {"node": 5, "dof": "fx", "value": 10000.0},
+    {"node": 5, "dof": "fz", "value": -50000.0}
+  ]
+}
