@@ -19,7 +19,8 @@ dependencies = [
     "numpy>=2.0.0",
     "scipy",
     "meshio",
-    "matplotlib"
+    "matplotlib",
+    "pyyaml>=6.0.3",
 ]
 
 [project.urls]
