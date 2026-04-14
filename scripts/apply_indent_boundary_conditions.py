@@ -91,6 +91,16 @@ def main() -> None:
         default=1e-5,
         help="Tolerance for classifying nodes on z=zmin or z=zmax.",
     )
+    p.add_argument(
+        "--pin-bottom-uxuy",
+        action="store_true",
+        help="Also fix ux,uy of one bottom node to remove rigid-body drift.",
+    )
+    p.add_argument(
+        "--indenter-uxuy-zero",
+        action="store_true",
+        help="Also fix ux,uy=0 on the indenter patch nodes (pure vertical motion).",
+    )
     args = p.parse_args()
 
     data = json.loads(args.inp.read_text())
@@ -120,6 +130,7 @@ def main() -> None:
     boundary_conditions: list[dict] = []
     bottom_ids: list[int] = []
     top_patch_ids: list[int] = []
+    pinned_bottom_id: int | None = None
 
     for n in nodes:
         nid = n["id"]
@@ -133,7 +144,19 @@ def main() -> None:
             and y0 - args.plane_tol <= y <= y1 + args.plane_tol
         ):
             boundary_conditions.append({"node": nid, "dof": ["uz"], "value": float(args.indent_uz)})
+            if args.indenter_uxuy_zero:
+                boundary_conditions.append({"node": nid, "dof": ["ux", "uy"], "value": 0.0})
             top_patch_ids.append(nid)
+
+    if args.pin_bottom_uxuy and bottom_ids:
+        # Pin the lexicographically smallest (x,y) node on the bottom plane.
+        bottom_nodes = [n for n in nodes if abs(float(n["coords"][2]) - zmin) < args.plane_tol]
+        pin = min(
+            bottom_nodes,
+            key=lambda n: (float(n["coords"][0]), float(n["coords"][1]), int(n["id"])),
+        )
+        pinned_bottom_id = int(pin["id"])
+        boundary_conditions.append({"node": pinned_bottom_id, "dof": ["ux", "uy"], "value": 0.0})
 
     data["boundary_conditions"] = boundary_conditions
     if "point_loads" not in data:
@@ -146,7 +169,8 @@ def main() -> None:
         f"Wrote {args.out}: z in [{zmin:g}, {zmax:g}], cell_size={cell:g}, "
         f"patch_placement={args.patch_placement}, top patch xy in "
         f"[{x0:g}, {x1:g}] x [{y0:g}, {y1:g}], "
-        f"uz=0 on {len(bottom_ids)} bottom nodes, uz={args.indent_uz:g} on {len(top_patch_ids)} top-patch nodes."
+        f"uz=0 on {len(bottom_ids)} bottom nodes, uz={args.indent_uz:g} on {len(top_patch_ids)} top-patch nodes, "
+        f"pin_bottom_uxuy={args.pin_bottom_uxuy}({pinned_bottom_id}), indenter_uxuy_zero={args.indenter_uxuy_zero}."
     )
 
 

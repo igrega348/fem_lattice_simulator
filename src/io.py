@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 
 import numpy as np
@@ -124,3 +125,27 @@ def export_vtk(model: FEAModel, u: np.ndarray, filepath: str):
     
     # Save the mesh
     mesh.write(filepath)
+
+
+def write_pvd_timeseries(filepath: str, datasets: list[tuple[float, str]]) -> None:
+    """
+    Write a ParaView `.pvd` collection indexing multiple `.vtu` files as timesteps.
+
+    datasets: list of (timestep, vtu_path). Paths are written relative to the PVD.
+    """
+    pvd_path = Path(filepath)
+    pvd_path.parent.mkdir(parents=True, exist_ok=True)
+
+    lines: list[str] = []
+    lines.append('<?xml version="1.0"?>')
+    lines.append('<VTKFile type="Collection" version="0.1" byte_order="LittleEndian">')
+    lines.append("  <Collection>")
+
+    base_dir = str(pvd_path.parent)
+    for ts, file_path in datasets:
+        rel = os.path.relpath(file_path, start=base_dir)
+        lines.append(f'    <DataSet timestep="{ts}" group="" part="0" file="{rel}"/>')
+
+    lines.append("  </Collection>")
+    lines.append("</VTKFile>")
+    pvd_path.write_text("\n".join(lines) + "\n")

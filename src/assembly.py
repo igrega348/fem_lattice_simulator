@@ -26,6 +26,9 @@ class Assembler:
         
         # Precompute DOF maps for sparse assembly
         self.element_dofs = np.zeros((self.num_elements, 12), dtype=int)
+
+        # Store element endpoint node indices (0..num_nodes-1) for geometry refresh
+        self.element_nodes = np.zeros((self.num_elements, 2), dtype=int)
         
         self._prepare_data()
         self._prepare_sparse_indices()
@@ -51,6 +54,9 @@ class Assembler:
             
             n1_idx = self.node_id_to_idx[n1_id]
             n2_idx = self.node_id_to_idx[n2_id]
+
+            self.element_nodes[i, 0] = n1_idx
+            self.element_nodes[i, 1] = n2_idx
             
             # 6 DOFs per node
             self.element_dofs[i, :6] = np.arange(n1_idx * 6, n1_idx * 6 + 6)
@@ -66,6 +72,21 @@ class Assembler:
         self.Iz = jnp.array(self.Iz)
         self.J = jnp.array(self.J)
         
+    def set_reference_positions(self, positions: np.ndarray) -> None:
+        """
+        Update element reference geometry from nodal positions.
+
+        positions: (num_nodes, 3) array ordered by self.node_id_to_idx.
+        """
+        if positions.shape != (self.num_nodes, 3):
+            raise ValueError(
+                f"positions must have shape ({self.num_nodes}, 3), got {positions.shape}"
+            )
+        x1 = positions[self.element_nodes[:, 0]]
+        x2 = positions[self.element_nodes[:, 1]]
+        self.x1 = jnp.array(x1, dtype=jnp.float64)
+        self.x2 = jnp.array(x2, dtype=jnp.float64)
+
     def _prepare_sparse_indices(self):
         # We need row and col indices for the 12x12 stiffness matrix of each element
         # element_dofs shape is (num_elements, 12)
