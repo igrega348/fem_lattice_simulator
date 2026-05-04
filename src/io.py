@@ -7,6 +7,45 @@ import meshio
 from src.model import FEAModel
 
 
+def compute_element_axial_strain_stress(model: FEAModel, u: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Compute per-element axial strain and axial stress (scalar) using the
+    element's local x-axis defined by its chord.
+
+    This is a first-pass stress metric intended for visualization.
+    """
+    node_id_to_idx = {node_id: idx for idx, node_id in enumerate(model.nodes.keys())}
+    u_n = u.reshape((len(model.nodes), 6))
+
+    axial_strain = np.zeros(len(model.elements), dtype=float)
+    axial_stress = np.zeros(len(model.elements), dtype=float)
+
+    for i, (_el_id, el) in enumerate(model.elements.items()):
+        n1_id, n2_id = el.node_ids
+        n1 = model.nodes[n1_id]
+        n2 = model.nodes[n2_id]
+        x1 = n1.coords
+        x2 = n2.coords
+        d = x2 - x1
+        L = float(np.linalg.norm(d))
+        if L == 0.0:
+            continue
+        e1 = d / L
+
+        i1 = node_id_to_idx[n1_id]
+        i2 = node_id_to_idx[n2_id]
+        u1 = u_n[i1, :3]
+        u2 = u_n[i2, :3]
+        du = float(np.dot(e1, (u2 - u1)))
+        eps = du / L
+
+        mat = model.materials[el.material_id]
+        axial_strain[i] = eps
+        axial_stress[i] = float(mat.E) * eps
+
+    return axial_strain, axial_stress
+
+
 def export_deformed_model_json(model: FEAModel, u: np.ndarray, filepath: str) -> None:
     """
     Write a lattice JSON matching the FEAModel input schema, with node ``coords``
@@ -86,7 +125,13 @@ def export_deformed_model_json(model: FEAModel, u: np.ndarray, filepath: str) ->
     path.write_text(json.dumps(data, indent=2) + "\n")
 
 
-def export_vtk(model: FEAModel, u: np.ndarray, filepath: str):
+def export_vtk(
+    model: FEAModel,
+    u: np.ndarray,
+    filepath: str,
+    *,
+    cell_data: dict[str, np.ndarray] | None = None,
+):
     """
     Exports the deformed lattice model to VTK/VTU format using meshio.
     """
@@ -115,12 +160,17 @@ def export_vtk(model: FEAModel, u: np.ndarray, filepath: str):
         "Displacement": translations,
         "Rotation": rotations
     }
+
+    mesh_cell_data = None
+    if cell_data is not None:
+        mesh_cell_data = {k: [np.asarray(v)] for k, v in cell_data.items()}
     
     # Write to VTK/VTU using meshio
     mesh = meshio.Mesh(
         points=points,
         cells=cells,
-        point_data=point_data
+        point_data=point_data,
+        cell_data=mesh_cell_data,
     )
     
     # Save the mesh

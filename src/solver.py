@@ -129,7 +129,12 @@ class Solver:
 
         Returns u_cumulative.
         """
-        from src.io import export_deformed_model_json, export_vtk, write_pvd_timeseries
+        from src.io import (
+            compute_element_axial_strain_stress,
+            export_deformed_model_json,
+            export_vtk,
+            write_pvd_timeseries,
+        )
 
         if T_max <= 0:
             raise ValueError("T_max must be > 0")
@@ -173,7 +178,17 @@ class Solver:
                 vtu_path = f"{output_prefix}_t{t:04d}.vtu"
                 json_path = f"{output_prefix}_t{t:04d}.json"
                 if write_vtu:
-                    export_vtk(self.model, u_cum, vtu_path)
+                    eps, sigma = compute_element_axial_strain_stress(self.model, u_cum)
+                    export_vtk(
+                        self.model,
+                        u_cum,
+                        vtu_path,
+                        cell_data={
+                            "AxialStrain": eps,
+                            "AxialStress": sigma,
+                            "VonMisesEqv": np.abs(sigma),
+                        },
+                    )
                 if write_json:
                     export_deformed_model_json(self.model, u_cum, json_path)
 

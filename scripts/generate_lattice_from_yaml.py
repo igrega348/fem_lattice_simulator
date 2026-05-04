@@ -156,7 +156,7 @@ def build_model_dict(
 
     if materials is None:
         materials = [
-            {"id": 1, "E": 210e9, "nu": 0.3, "model": "linear_elastic"},
+            {"id": 1, "E": 1.0, "nu": 0.3, "model": "linear_elastic"},
         ]
     if sections is None:
         sections = [

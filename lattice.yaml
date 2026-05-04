@@ -1,0 +1,414 @@
+type: tessellated_obj_coll
+uc:
+  objects:
+    objects:
+    - p0:
+      - 0.1
+      - 0.0
+      - 0.2
+      p1:
+      - 0.2
+      - 0.0
+      - 0.3
+      radius: 0.025
+      rho: 1
+      type: cylinder
+    - p0:
+      - 0.1
+      - 0.4
+      - 0.2
+      p1:
+      - 0.2
+      - 0.4
+      - 0.3
+      radius: 0.025
+      rho: 1
+      type: cylinder
+    - p0:
+      - 0.1
+      - 0.0
+      - 0.2
+      p1:
+      - 0.2
+      - 0.0
+      - 0.1
+      radius: 0.025
+      rho: 1
+      type: cylinder
+    - p0:
+      - 0.1
+      - 0.4
+      - 0.2
+      p1:
+      - 0.2
+      - 0.4
+      - 0.1
+      radius: 0.025
+      rho: 1
+      type: cylinder
+    - p0:
+      - 0.1
+      - 0.0
+      - 0.2
+      p1:
+      - 0.0
+      - 0.1
+      - 0.2
+      radius: 0.025
+      rho: 1
+      type: cylinder
+    - p0:
+      - 0.2
+      - 0.0
+      - 0.3
+      p1:
+      - 0.3
+      - 0.0
+      - 0.2
+      radius: 0.025
+      rho: 1
+      type: cylinder
+    - p0:
+      - 0.2
+      - 0.4
+      - 0.3
+      p1:
+      - 0.3
+      - 0.4
+      - 0.2
+      radius: 0.025
+      rho: 1
+      type: cylinder
+    - p0:
+      - 0.2
+      - 0.0
+      - 0.3
+      p1:
+      - 0.2
+      - 0.1
+      - 0.4
+      radius: 0.025
+      rho: 1
+      type: cylinder
+    - p0:
+      - 0.3
+      - 0.0
+      - 0.2
+      p1:
+      - 0.2
+      - 0.0
+      - 0.1
+      radius: 0.025
+      rho: 1
+      type: cylinder
+    - p0:
+      - 0.3
+      - 0.4
+      - 0.2
+      p1:
+      - 0.2
+      - 0.4
+      - 0.1
+      radius: 0.025
+      rho: 1
+      type: cylinder
+    - p0:
+      - 0.3
+      - 0.0
+      - 0.2
+      p1:
+      - 0.4
+      - 0.1
+      - 0.2
+      radius: 0.025
+      rho: 1
+      type: cylinder
+    - p0:
+      - 0.2
+      - 0.0
+      - 0.1
+      p1:
+      - 0.2
+      - 0.1
+      - 0.0
+      radius: 0.025
+      rho: 1
+      type: cylinder
+    - p0:
+      - 0.4
+      - 0.2
+      - 0.3
+      p1:
+      - 0.3
+      - 0.2
+      - 0.4
+      radius: 0.025
+      rho: 1
+      type: cylinder
+    - p0:
+      - 0.4
+      - 0.3
+      - 0.2
+      p1:
+      - 0.3
+      - 0.4
+      - 0.2
+      radius: 0.025
+      rho: 1
+      type: cylinder
+    - p0:
+      - 0.4
+      - 0.2
+      - 0.1
+      p1:
+      - 0.3
+      - 0.2
+      - 0.0
+      radius: 0.025
+      rho: 1
+      type: cylinder
+    - p0:
+      - 0.1
+      - 0.4
+      - 0.2
+      p1:
+      - 0.0
+      - 0.3
+      - 0.2
+      radius: 0.025
+      rho: 1
+      type: cylinder
+    - p0:
+      - 0.2
+      - 0.4
+      - 0.3
+      p1:
+      - 0.2
+      - 0.3
+      - 0.4
+      radius: 0.025
+      rho: 1
+      type: cylinder
+    - p0:
+      - 0.2
+      - 0.4
+      - 0.1
+      p1:
+      - 0.2
+      - 0.3
+      - 0.0
+      radius: 0.025
+      rho: 1
+      type: cylinder
+    - p0:
+      - 0.0
+      - 0.1
+      - 0.2
+      p1:
+      - 0.0
+      - 0.2
+      - 0.3
+      radius: 0.025
+      rho: 1
+      type: cylinder
+    - p0:
+      - 0.4
+      - 0.1
+      - 0.2
+      p1:
+      - 0.4
+      - 0.2
+      - 0.3
+      radius: 0.025
+      rho: 1
+      type: cylinder
+    - p0:
+      - 0.0
+      - 0.1
+      - 0.2
+      p1:
+      - 0.0
+      - 0.2
+      - 0.1
+      radius: 0.025
+      rho: 1
+      type: cylinder
+    - p0:
+      - 0.4
+      - 0.1
+      - 0.2
+      p1:
+      - 0.4
+      - 0.2
+      - 0.1
+      radius: 0.025
+      rho: 1
+      type: cylinder
+    - p0:
+      - 0.0
+      - 0.2
+      - 0.3
+      p1:
+      - 0.1
+      - 0.2
+      - 0.4
+      radius: 0.025
+      rho: 1
+      type: cylinder
+    - p0:
+      - 0.0
+      - 0.2
+      - 0.3
+      p1:
+      - 0.0
+      - 0.3
+      - 0.2
+      radius: 0.025
+      rho: 1
+      type: cylinder
+    - p0:
+      - 0.4
+      - 0.2
+      - 0.3
+      p1:
+      - 0.4
+      - 0.3
+      - 0.2
+      radius: 0.025
+      rho: 1
+      type: cylinder
+    - p0:
+      - 0.0
+      - 0.3
+      - 0.2
+      p1:
+      - 0.0
+      - 0.2
+      - 0.1
+      radius: 0.025
+      rho: 1
+      type: cylinder
+    - p0:
+      - 0.4
+      - 0.3
+      - 0.2
+      p1:
+      - 0.4
+      - 0.2
+      - 0.1
+      radius: 0.025
+      rho: 1
+      type: cylinder
+    - p0:
+      - 0.0
+      - 0.2
+      - 0.1
+      p1:
+      - 0.1
+      - 0.2
+      - 0.0
+      radius: 0.025
+      rho: 1
+      type: cylinder
+    - p0:
+      - 0.1
+      - 0.2
+      - 0.0
+      p1:
+      - 0.2
+      - 0.3
+      - 0.0
+      radius: 0.025
+      rho: 1
+      type: cylinder
+    - p0:
+      - 0.1
+      - 0.2
+      - 0.4
+      p1:
+      - 0.2
+      - 0.3
+      - 0.4
+      radius: 0.025
+      rho: 1
+      type: cylinder
+    - p0:
+      - 0.1
+      - 0.2
+      - 0.0
+      p1:
+      - 0.2
+      - 0.1
+      - 0.0
+      radius: 0.025
+      rho: 1
+      type: cylinder
+    - p0:
+      - 0.1
+      - 0.2
+      - 0.4
+      p1:
+      - 0.2
+      - 0.1
+      - 0.4
+      radius: 0.025
+      rho: 1
+      type: cylinder
+    - p0:
+      - 0.2
+      - 0.3
+      - 0.0
+      p1:
+      - 0.3
+      - 0.2
+      - 0.0
+      radius: 0.025
+      rho: 1
+      type: cylinder
+    - p0:
+      - 0.2
+      - 0.3
+      - 0.4
+      p1:
+      - 0.3
+      - 0.2
+      - 0.4
+      radius: 0.025
+      rho: 1
+      type: cylinder
+    - p0:
+      - 0.3
+      - 0.2
+      - 0.0
+      p1:
+      - 0.2
+      - 0.1
+      - 0.0
+      radius: 0.025
+      rho: 1
+      type: cylinder
+    - p0:
+      - 0.3
+      - 0.2
+      - 0.4
+      p1:
+      - 0.2
+      - 0.1
+      - 0.4
+      radius: 0.025
+      rho: 1
+      type: cylinder
+    type: object_collection
+  type: unit_cell
+  xmax: 0.4
+  xmin: 0.0
+  ymax: 0.4
+  ymin: 0.0
+  zmax: 0.4
+  zmin: 0.0
+xmax: 0.81
+xmin: -0.81
+ymax: 0.81
+ymin: -0.81
+zmax: 0.81
+zmin: -0.81

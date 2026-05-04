@@ -2,10 +2,11 @@ import argparse
 import time
 from pathlib import Path
 
+import numpy as np
 import jax
 
 jax.config.update("jax_enable_x64", True)
-from src.io import export_deformed_model_json, export_vtk
+from src.io import compute_element_axial_strain_stress, export_deformed_model_json, export_vtk
 from src.model import FEAModel
 from src.solver import Solver
 
@@ -117,7 +118,17 @@ def main():
 
     if not args.no_vtu:
         print(f"Exporting results to {out_vtu!r}...")
-        export_vtk(model, u, out_vtu)
+        eps, sigma = compute_element_axial_strain_stress(model, u)
+        export_vtk(
+            model,
+            u,
+            out_vtu,
+            cell_data={
+                "AxialStrain": eps,
+                "AxialStress": sigma,
+                "VonMisesEqv": np.abs(sigma),
+            },
+        )
     if not args.no_json:
         print(f"Exporting deformed model JSON to {out_json!r}...")
         export_deformed_model_json(model, u, out_json)
