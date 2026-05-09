@@ -153,6 +153,11 @@ cython_debug/
 *.vtr
 *.vti
 output.*
+run_kelvin*.json
+run_kelvin*.pvd
+out.json
+yaml_out/
+runs/
 
 # Temporary files
 *.tmp

@@ -6,6 +6,12 @@ lattice.yaml (unit cell cylinders + tessellation).
 Example source file:
 https://github.com/igrega348/xray_projection_render/blob/main/examples/lattice.yaml
 
+Node coordinates are normalized for ``xray_projection_render`` (~[-1,1]^3 world): centered at
+the origin with the axis-aligned bounding box half-extent (max half-width along x/y/z)
+mapped to ``--target-half-extent`` (default 0.8). Section areas and second moments scale
+accordingly so the undeformed slender-beam geometry matches the shrunken coordinates.
+``meta.unit_cell_period`` holds the tessellation period in the same normalized length units.
+
 Usage:
   uv run python scripts/generate_lattice_from_yaml.py \\
       --yaml path/to/lattice.yaml --out lattice_kelvin.json --nx 4 --ny 4 --nz 4
@@ -15,11 +21,26 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 import yaml
+
+# Solid circular section; matches ``radius: 0.025`` on cylinders in typical Kelvin ``lattice.yaml``.
+_DEFAULT_STRUT_RADIUS = 0.025
+
+
+def _circular_beam_section_props(radius: float) -> dict[str, float]:
+    r2 = radius * radius
+    r4 = r2 * r2
+    return {
+        "A": math.pi * r2,
+        "Iy": math.pi * r4 / 4.0,
+        "Iz": math.pi * r4 / 4.0,
+        "J": math.pi * r4 / 2.0,
+    }
 
 
 def _extract_cylinders(uc: dict[str, Any]) -> list[dict[str, Any]]:
@@ -78,6 +99,55 @@ def _subdivide_segment(
     return [(pts[i].copy(), pts[i + 1].copy()) for i in range(n_seg)]
 
 
+def _normalize_tessellation_beams(
+    beams: list[tuple[np.ndarray, np.ndarray]],
+    *,
+    target_half_extent: float,
+    enabled: bool,
+) -> tuple[list[tuple[np.ndarray, np.ndarray]], float, np.ndarray]:
+    """
+    Uniform scale and translate so the tight axis-aligned hull of beam endpoints fits in
+    approximately [-target_half_extent, target_half_extent] on the widest axis.
+
+    Returns (scaled beams, linear scale factor s, centroid of raw bbox).
+    ``p_normalized = s * (p_raw - centroid)``.
+    """
+    if not enabled or not beams:
+        return beams, 1.0, np.zeros(3, dtype=float)
+    pts_list: list[np.ndarray] = []
+    for a, b in beams:
+        pts_list.append(a.reshape(1, 3))
+        pts_list.append(b.reshape(1, 3))
+    arr = np.vstack(pts_list)
+    lo = arr.min(axis=0)
+    hi = arr.max(axis=0)
+    centroid = (lo + hi) * 0.5
+    half_ranges = (hi - lo) * 0.5
+    max_half = float(np.max(half_ranges))
+    if max_half <= 0.0:
+        return beams, 1.0, centroid
+    s = float(target_half_extent / max_half)
+    out: list[tuple[np.ndarray, np.ndarray]] = []
+    for a, b in beams:
+        out.append((s * (a - centroid), s * (b - centroid)))
+    return out, s, centroid
+
+
+def _scale_sections_for_geometry_scale(
+    sections: list[dict[str, Any]], linear_scale: float
+) -> None:
+    """Scale section dicts consistently with a uniform spatial scale factor (lengths × s)."""
+    if linear_scale == 1.0:
+        return
+    s2 = linear_scale * linear_scale
+    s4 = s2 * s2
+    for sec in sections:
+        sec["A"] = float(sec["A"]) * s2
+        sec["Iy"] = float(sec["Iy"]) * s4
+        sec["Iz"] = float(sec["Iz"]) * s4
+        sec["J"] = float(sec["J"]) * s4
+
+
 def _collect_beam_endpoints(
     uc: dict[str, Any], repeats: tuple[int, int, int], subdivide: int
 ) -> list[tuple[np.ndarray, np.ndarray]]:
@@ -110,6 +180,8 @@ def build_model_dict(
     repeats: tuple[int, int, int],
     *,
     subdivide: int = 1,
+    normalize_for_renderer: bool = True,
+    target_half_extent: float = 0.8,
     position_decimals: int = 9,
     material_id: int = 1,
     section_id: int = 1,
@@ -117,6 +189,11 @@ def build_model_dict(
     sections: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     beams = _collect_beam_endpoints(uc, repeats, subdivide)
+    beams, geom_scale, center_yaml = _normalize_tessellation_beams(
+        beams,
+        target_half_extent=target_half_extent,
+        enabled=normalize_for_renderer,
+    )
     pos_to_id: dict[tuple[float, float, float], int] = {}
     nodes: list[dict[str, Any]] = []
     elements: list[dict[str, Any]] = []
@@ -159,11 +236,11 @@ def build_model_dict(
             {"id": 1, "E": 1.0, "nu": 0.3, "model": "linear_elastic"},
         ]
     if sections is None:
-        sections = [
-            {"id": 1, "A": 0.01, "Iy": 1e-5, "Iz": 1e-5, "J": 2e-5},
-        ]
+        circ = _circular_beam_section_props(_DEFAULT_STRUT_RADIUS)
+        sections = [{"id": section_id, **circ}]
+    _scale_sections_for_geometry_scale(sections, geom_scale)
 
-    return {
+    out: dict[str, Any] = {
         "materials": materials,
         "sections": sections,
         "nodes": nodes,
@@ -171,6 +248,17 @@ def build_model_dict(
         "boundary_conditions": [],
         "point_loads": [],
     }
+    if normalize_for_renderer:
+        period = _uc_period(uc) * geom_scale
+        out["meta"] = {
+            "unit_cell_period": period.tolist(),
+            "renderer_normalization": {
+                "scale": geom_scale,
+                "center_yaml_space": center_yaml.tolist(),
+                "target_half_extent": float(target_half_extent),
+            },
+        }
+    return out
 
 
 def load_uc_from_lattice_yaml(path: Path) -> dict[str, Any]:
@@ -207,6 +295,17 @@ def main() -> None:
         default=9,
         help="Rounding for merging coincident nodes after tessellation.",
     )
+    parser.add_argument(
+        "--no-normalize",
+        action="store_true",
+        help="Keep raw YAML tessellation coordinates (disables renderer-style centering/scaling).",
+    )
+    parser.add_argument(
+        "--target-half-extent",
+        type=float,
+        default=0.8,
+        help="After centering, max half-width of node hull along x/y/z is set to this (default 0.8).",
+    )
     args = parser.parse_args()
 
     uc = load_uc_from_lattice_yaml(args.yaml)
@@ -214,6 +313,8 @@ def main() -> None:
         uc,
         (args.nx, args.ny, args.nz),
         subdivide=args.subdivide,
+        normalize_for_renderer=not args.no_normalize,
+        target_half_extent=args.target_half_extent,
         position_decimals=args.position_decimals,
     )
     args.out.parent.mkdir(parents=True, exist_ok=True)

@@ -63,8 +63,12 @@ def main() -> None:
     p.add_argument(
         "--cell-size",
         type=float,
-        default=0.4,
-        help="UC edge length used to size the top patch (matches lattice.yaml uc box; not inferred).",
+        default=None,
+        help=(
+            "UC edge length in model coordinates for sizing the top patch. "
+            "If omitted: use meta.unit_cell_period[0] from normalized "
+            "`generate_lattice_from_yaml.py` output when present; else 0.4."
+        ),
     )
     p.add_argument(
         "--patch-cells-x",
@@ -115,7 +119,19 @@ def main() -> None:
     ymin, ymax = min(ys), max(ys)
     zmin, zmax = min(zs), max(zs)
 
-    cell = float(args.cell_size)
+    cell_raw = args.cell_size
+    if cell_raw is None:
+        meta = data.get("meta")
+        if isinstance(meta, dict):
+            ucp = meta.get("unit_cell_period")
+            if isinstance(ucp, list) and len(ucp) >= 1:
+                try:
+                    cell_raw = float(ucp[0])
+                except (TypeError, ValueError):
+                    cell_raw = None
+        if cell_raw is None:
+            cell_raw = 0.4
+    cell = float(cell_raw)
     x0, x1, y0, y1 = _patch_xy_bounds(
         xmin,
         xmax,
